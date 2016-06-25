@@ -5,14 +5,14 @@
     <!-- Supports multiple JVM writing to the same log file in a safe way -->
     <prudent>true</prudent>
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <fileNamePattern>logFile.%d{yyyy-MM-dd}.log</fileNamePattern>
-      <maxHistory>20000</maxHistory> 
+      <fileNamePattern>stats.%d{yyyy-MM-dd}.csv</fileNamePattern>
+      <maxHistory>20000</maxHistory>
     </rollingPolicy>
 
     <encoder>
       <pattern>%msg%n</pattern>
     </encoder>
-  </appender> 
+  </appender>
 
   <root level="DEBUG">
     <appender-ref ref="FILE" />

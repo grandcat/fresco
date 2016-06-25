@@ -43,6 +43,7 @@ import java.util.concurrent.TimeoutException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import dk.alexandra.fresco.demo.DistSum;
 import dk.alexandra.fresco.framework.MPCException;
 import dk.alexandra.fresco.framework.Party;
 import dk.alexandra.fresco.framework.Reporter;
@@ -144,6 +145,8 @@ public class ScapiNetworkImpl implements Network {
 		} catch (TimeoutException e) {
 			throw new IOException(e);
 		}
+		// Hack for evaluation: start timer as all connections should be established by now
+		DistSum.startMeasurement();
 		
 		// Enable secure (auth + encrypted) channels if a key is specified.
 		for (int id = 0; id < sharedSecretKeys.size(); id++) {

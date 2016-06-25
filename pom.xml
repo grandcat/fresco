@@ -10,10 +10,10 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <skipTests>false</skipTests>
-  </properties>  
+  </properties>
 
- <!-- ================= FRESCO DEPENDENCIES ============================ -->  
- 
+ <!-- ================= FRESCO DEPENDENCIES ============================ -->
+
   <dependencies>
 
     <dependency>
@@ -27,7 +27,7 @@
 	  <artifactId>commons-configuration</artifactId>
 	  <version>1.6</version>
     </dependency>
-    
+
     <dependency>
 	  <groupId>org.apache.commons</groupId>
 	  <artifactId>commons-exec</artifactId>
@@ -47,31 +47,31 @@
 		<artifactId>spring-jdbc</artifactId>
 		<version>4.2.2.RELEASE</version>
 	</dependency>
-	
+
 	<dependency>
 		<groupId>org.apache.tomcat</groupId>
 		<artifactId>tomcat-jdbc</artifactId>
 		<version>8.0.28</version>
 	</dependency>
-	
+
 	<dependency>
 		<groupId>mysql</groupId>
 		<artifactId>mysql-connector-java</artifactId>
 		<version>5.1.6</version>
 	</dependency>
-	
+
 	<!-- Scapi -->
 
     <dependency>
       <groupId>scapi</groupId>
       <artifactId>scapi</artifactId>
-      <!-- Normally version should be e.g. 2.4.0, but we currently use a custom version 
+      <!-- Normally version should be e.g. 2.4.0, but we currently use a custom version
            since we need the most recent changes for authenticated channels to work,
            see https://github.com/cryptobiu/scapi/issues/71. -->
       <version>dfc8b2da384d87310c8f755b301bc085b1557671</version>
     </dependency>
 
-	<!-- SCAPI currently has a separate java project for malicious yao 
+	<!-- SCAPI currently has a separate java project for malicious yao
 	     We built it into a jar and add it here. -->
 	<dependency>
 	  <groupId>scapi</groupId>
@@ -79,7 +79,7 @@
 	  <version>b82956805dc9694d95d04e211c7bffab54294c21</version>
 	</dependency>
 
-    
+
     <!-- Library for parsing command line arguments. -->
     <dependency>
 	  <groupId>commons-cli</groupId>
@@ -95,12 +95,29 @@
       <version>4.12</version>
       <scope>test</scope>
     </dependency>
-  </dependencies>  
+
+    <!-- Concurrent logging for collecting statistics data -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.6.4</version>
+    </dependency>
+
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.0.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+      <version>1.0.1</version>
+    </dependency>
+  </dependencies>
 
 
-
-
-  <!-- ================ FRESCO BUILD ========================== -->  
+  <!-- ================ FRESCO BUILD ========================== -->
 
   <build>
   	<plugins>
@@ -144,9 +161,9 @@
                       <goal>verify</goal>
                    </goals>
                </execution>
-            </executions> 
+            </executions>
          </plugin>
-         
+
          <!-- This plugin is for building a jar with all included. We use that in the Quickstart documentation.
               See http://stackoverflow.com/questions/574594/how-can-i-create-an-executable-jar-with-dependencies-using-maven -->
          <plugin>
@@ -163,6 +180,25 @@
              </configuration>
           </plugin>
 
+          <!-- Classpath for VS Code's Java Intellisense -->
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-dependency-plugin</artifactId>
+              <version>2.9</version>
+              <executions>
+                  <execution>
+                      <id>build-classpath</id>
+                      <phase>generate-sources</phase>
+                      <goals>
+                          <goal>build-classpath</goal>
+                      </goals>
+                  </execution>
+              </executions>
+              <configuration>
+                  <outputFile>classpath.txt</outputFile>
+              </configuration>
+          </plugin>
+
 	</plugins>
   </build>
 
@@ -177,12 +213,12 @@
 
        I installed the SCAPI jar using this command:
 
-        tpj@ubuntu:~/fresco$ mvn org.apache.maven.plugins:maven-install-plugin:2.3.1:install-file 
+        tpj@ubuntu:~/fresco$ mvn org.apache.maven.plugins:maven-install-plugin:2.3.1:install-file
 	      -Dfile=/Users/tpj/Scapi-2.4.0.jar
-	      -DgroupId=scapi 
-	      -DartifactId=scapi 
-	      -Dpackaging=jar 
-	      -Dversion=2.4.0 
+	      -DgroupId=scapi
+	      -DartifactId=scapi
+	      -Dpackaging=jar
+	      -Dversion=2.4.0
 	      -DlocalRepositoryPath=./lib
 
   -->
@@ -192,6 +228,6 @@
       <url>file://${basedir}/lib</url>
     </repository>
   </repositories>
-  
+
 
 </project>

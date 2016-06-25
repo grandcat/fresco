@@ -188,6 +188,12 @@ public class TestSpdzBasicArithmetic3Parties {
 		runTest(new BasicArithmeticTests.TestSumAndMult(),
 				EvaluationStrategy.PARALLEL_BATCHED, StorageStrategy.IN_MEMORY);
 	}
+	
+	@Test
+	public void test_Distributed_Sum_Sequential() throws Exception {
+		runTest(new BasicArithmeticTests.TestDistributedSum(),
+				EvaluationStrategy.SEQUENTIAL, StorageStrategy.IN_MEMORY);
+	}
 
 	@Test
 	public void test_Lots_Of_Inputs_SequentialBatched() throws Exception {

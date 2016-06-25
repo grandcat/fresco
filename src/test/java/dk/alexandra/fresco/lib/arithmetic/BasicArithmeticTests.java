@@ -28,11 +28,13 @@ package dk.alexandra.fresco.lib.arithmetic;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.logging.Level;
 
 import org.junit.Assert;
 
 import dk.alexandra.fresco.framework.ProtocolFactory;
 import dk.alexandra.fresco.framework.ProtocolProducer;
+import dk.alexandra.fresco.framework.Reporter;
 import dk.alexandra.fresco.framework.TestApplication;
 import dk.alexandra.fresco.framework.TestThreadRunner.TestThread;
 import dk.alexandra.fresco.framework.TestThreadRunner.TestThreadConfiguration;
@@ -45,6 +47,7 @@ import dk.alexandra.fresco.lib.compare.ComparisonProtocolFactory;
 import dk.alexandra.fresco.lib.compare.ComparisonProtocolFactoryImpl;
 import dk.alexandra.fresco.lib.field.integer.BasicNumericFactory;
 import dk.alexandra.fresco.lib.helper.CopyProtocolImpl;
+import dk.alexandra.fresco.lib.helper.ParallelProtocolProducer;
 import dk.alexandra.fresco.lib.helper.builder.NumericIOBuilder;
 import dk.alexandra.fresco.lib.helper.builder.NumericProtocolBuilder;
 import dk.alexandra.fresco.lib.helper.sequential.SequentialProtocolProducer;
@@ -95,6 +98,8 @@ public class BasicArithmeticTests {
 							BasicNumericFactory fac = (BasicNumericFactory) factory;
 							NumericIOBuilder ioBuilder = new NumericIOBuilder(
 									fac);
+							// For BGW suite, this means that player 1 shares the input to
+							// all other partys using Shamirs shared secret
 							SInt input1 = ioBuilder.input(BigInteger.valueOf(10), 1);
 
 							OInt output = ioBuilder.output(input1);
@@ -334,62 +339,187 @@ public class BasicArithmeticTests {
 				@Override
 				public void test() throws Exception {
 					final int[] openInputs = new int[] { 1, 2, 3, 4, 5, 6, 7,
-							8, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+							8, 9};
+					
+					final int[] openP2 = new int[] { 42, 42, 42, 42, 42, 42, 42, 42, 42 };
+					
 					TestApplication app = new TestApplication() {
-
 						private static final long serialVersionUID = -8310958118835789509L;
 
 						@Override
 						public ProtocolProducer prepareApplication(
 								ProtocolFactory factory) {
+							Reporter.init(Level.INFO);
+							Reporter.info(">>>>> I am player " + conf.getMyId());
+							
 							BasicNumericFactory fac = (BasicNumericFactory) factory;
 							NumericIOBuilder ioBuilder = new NumericIOBuilder(
 									fac);
 
-							SInt[] inputs = createInputs(ioBuilder, openInputs,
-									1);
+							// First input round: 1->2, 1->3
+							SInt[] inputs1;
+							if (conf.getMyId() == 2) {
+								// Input some random values so it has to fetch secret from p1
+								inputs1 = createInputs(ioBuilder, new int[9], 1);
+							} else {
+								inputs1 = createInputs(ioBuilder, openInputs, 1);
+							}
+								
 
-							ProtocolProducer inp = ioBuilder.getProtocol();
+							ProtocolProducer inp1 = ioBuilder.getProtocol();
+							ioBuilder.reset();
+							
+							// Second input round: 2->1, 2->3
+							SInt[] inputs2;
+							inputs2 = createInputs(ioBuilder, openP2, 2);
+							
+							ProtocolProducer inp2 = ioBuilder.getProtocol();
 							ioBuilder.reset();
 
 							// create wire
-							SInt sum = fac.getSInt();
+							SInt sum1 = fac.getSInt();
+							SInt sum2 = fac.getSInt();
 
 							// create Sequence of protocols which eventually
 							// will compute the sum
 							SequentialProtocolProducer sumProtocol = new SequentialProtocolProducer();
 
-							sumProtocol.append(fac.getAddProtocol(inputs[0],
-									inputs[1], sum));
-							if (inputs.length > 2) {
-								for (int i = 2; i < inputs.length; i++) {
-									// Add sum and next secret shared input and
-									// store in sum.
-									sumProtocol.append(fac.getAddProtocol(sum,
-											inputs[i], sum));
-								}
-							}
+							sumProtocol.append(fac.getAddProtocol(inputs1[0], inputs1[1], sum1));
+							sumProtocol.append(fac.getAddProtocol(inputs2[0], inputs2[1], sum2));
+							
+//							if (inputs.length > 2) {
+//								for (int i = 2; i < inputs.length; i++) {
+//									// Add sum and next secret shared input and
+//									// store in sum.
+//									sumProtocol.append(fac.getAddProtocol(sum,
+//											inputs[i], sum));
+//								}
+//							}
 
-							sumProtocol.append(fac.getMultProtocol(sum, sum,
-									sum));
+							sumProtocol.append(fac.getMultProtocol(sum1, sum2,
+									sum1));
 
-							this.outputs = new OInt[] { ioBuilder.output(sum) };
+							this.outputs = new OInt[] { ioBuilder.output(sum1) };
 
 							ProtocolProducer io = ioBuilder.getProtocol();
 
 							ProtocolProducer gp = new SequentialProtocolProducer(
-									inp, sumProtocol, io);
+									new ParallelProtocolProducer(inp1, inp2), sumProtocol, io);
 							return gp;
 						}
 					};
+					
+					long startTime = System.currentTimeMillis();
 					sce.runApplication(app);
 					int sum = 0;
 					for (int i : openInputs) {
 						sum += i;
 					}
 					sum = sum * sum;
-					Assert.assertEquals(BigInteger.valueOf(sum),
-							app.getOutputs()[0].getValue());
+					
+					OInt[] rcvdOutput = app.getOutputs();
+					long runTime = System.currentTimeMillis() - startTime;
+					
+					Reporter.info(">>>>> [" + conf.getMyId() + "] Got output " + rcvdOutput[0].getValue());
+					Reporter.info(">>>>> [" + conf.getMyId() + "] Calculation time: " + runTime);
+					
+//					Assert.assertEquals(BigInteger.valueOf(sum),
+//							rcvdOutput[0].getValue());
+				}
+			};
+		};
+	};
+	
+	public static class TestDistributedSum extends TestThreadFactory {
+		@Override
+		public TestThread next(TestThreadConfiguration conf) {
+			return new ThreadWithFixture() {
+				@Override
+				public void test() throws Exception {
+					
+					TestApplication app = new TestApplication() {
+						private static final long serialVersionUID = -8310958118835789509L;
+						
+						private final BigInteger myValue = BigInteger.valueOf(conf.getMyId() * 2);
+
+						@Override
+						public ProtocolProducer prepareApplication(
+								ProtocolFactory factory) {
+							Reporter.init(Level.INFO);
+							Reporter.info(">>>>> I am player " + conf.getMyId());
+							
+							BasicNumericFactory fac = (BasicNumericFactory) factory;
+							NumericIOBuilder ioBuilder = new NumericIOBuilder(fac);
+							NumericProtocolBuilder npb = new NumericProtocolBuilder(fac);	//< provides more advanced ioBuilder
+							
+							final int numPeers = conf.getNoOfParties();
+							// Create wires
+							SInt[] inputSharings = new SInt[numPeers];
+//							for (int i = 0; i < inputSharings.length; i++) {
+//								inputSharings[i] = fac.getSInt();
+//							}
+							
+							// Each participant provides a secret value which is shared secretly
+							// among the other parties
+//							ParallelProtocolProducer shareInputPar = new ParallelProtocolProducer();
+//							OInt oi = fac.getOInt();
+//							oi.setValue(myValue);
+//							for (int p = 1; p <= numPeers; p++) {
+//								shareInputPar.append(fac.getCloseProtocol(p, oi, inputSharings[p - 1]));								
+//							}
+							
+							// working:
+							ioBuilder.beginParScope();
+							for (int p = 1; p <= numPeers; p++) {
+								inputSharings[p - 1] = ioBuilder.input(myValue, p);
+							}
+							ioBuilder.endCurScope();
+							ProtocolProducer shareInputPar = (SequentialProtocolProducer)ioBuilder.getProtocol();
+							ioBuilder.reset();
+
+							// Sum: create wire
+							SInt sum1 = fac.getSInt();
+							
+							// create Sequence of protocols which eventually
+							// will compute the sum
+//							SequentialProtocolProducer sumProtocol = new SequentialProtocolProducer();
+//							sumProtocol.append(fac.getAddProtocol(inputSharings[0], inputSharings[1], sum1));
+//							
+//							if (inputSharings.length > 2) {
+//								for (int i = 2; i < inputSharings.length; i++) {
+//									// Add sum and next secret shared input and
+//									// store in sum.
+//									sumProtocol.append(fac.getAddProtocol(sum1,
+//											inputSharings[i], sum1));
+//								}
+//							}
+							
+							ProtocolProducer sumProtocol;
+							sum1 = npb.sum(inputSharings);
+							sumProtocol = npb.getProtocol();
+							
+
+							this.outputs = new OInt[] { ioBuilder.output(sum1) };
+
+							ProtocolProducer io = ioBuilder.getProtocol();
+
+							ProtocolProducer gp = new SequentialProtocolProducer(
+									shareInputPar, sumProtocol, io);
+							return gp;
+						}
+					};
+					
+					long startTime = System.currentTimeMillis();
+					sce.runApplication(app);
+					
+					OInt[] rcvdOutput = app.getOutputs();
+					long runTime = System.currentTimeMillis() - startTime;
+					
+					Reporter.info(">>>>> [" + conf.getMyId() + "] Got output " + rcvdOutput[0].getValue());
+					Reporter.info(">>>>> [" + conf.getMyId() + "] Calculation time: " + runTime);
+					
+//					Assert.assertEquals(BigInteger.valueOf(sum),
+//							rcvdOutput[0].getValue());
 				}
 			};
 		};

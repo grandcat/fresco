@@ -226,6 +226,11 @@ public class TestBgwBasicArithmetic {
 		runTest(new BasicArithmeticTests.TestSumAndMult(), 3, 1, EvaluationStrategy.SEQUENTIAL);
 	}
 	
+	@Test
+	public void test_distributed_arithmetic_Sequential_5_2() throws Exception {
+		runTest(new BasicArithmeticTests.TestDistributedSum(), 51, 24, EvaluationStrategy.SEQUENTIAL_BATCHED);
+	}
+	
 	// ====== Binary operations ======
 	
 	@Test

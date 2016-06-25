@@ -251,6 +251,11 @@ public class NumericIOBuilder extends AbstractProtocolBuilder {
 	 * @param targetID
 	 *            the party to input
 	 * @return the SInt to be loaded with the input
+	 * 
+	 * For BGW, for instance, an input value from targetID is shared
+	 * among all participants (including ourself) according to Shamirs sharing.
+	 * This means nobody cannot deduce any information if the source party
+	 * does not reveal its secret. 
 	 */
 	public SInt input(BigInteger i, int targetID) {
 		SInt si = sif.getSInt();

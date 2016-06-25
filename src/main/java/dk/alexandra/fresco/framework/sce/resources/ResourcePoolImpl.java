@@ -105,7 +105,7 @@ public class ResourcePoolImpl implements SCEResourcePool {
 		if(connected) {
 			return;
 		}
-		network.connect(10000);
+		network.connect(30000);
 		connected = true;
 	}
 

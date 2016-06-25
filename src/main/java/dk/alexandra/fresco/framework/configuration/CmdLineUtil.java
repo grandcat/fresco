@@ -55,8 +55,10 @@ import dk.alexandra.fresco.framework.sce.resources.storage.StorageStrategy;
 import dk.alexandra.fresco.framework.sce.resources.storage.StreamedStorage;
 import dk.alexandra.fresco.suite.ProtocolSuite;
 import dk.alexandra.fresco.suite.bgw.configuration.BgwConfiguration;
+import dk.alexandra.fresco.suite.bgw.configuration.BgwConfigurationFromProperties;
 import dk.alexandra.fresco.suite.dummy.DummyConfiguration;
 import dk.alexandra.fresco.suite.spdz.configuration.SpdzConfiguration;
+import dk.alexandra.fresco.suite.spdz.configuration.SpdzConfigurationFromProperties;
 
 
 /**
@@ -384,7 +386,7 @@ public class CmdLineUtil {
 
 	
 	public CommandLine parse(String[] args) {
-		//System.out.println("Got args: " + Arrays.toString(args));
+		System.out.println("Got args: " + Arrays.toString(args));
 		try {
 			CommandLineParser parser = new DefaultParser();
 			this.cmd = parser.parse(options, args);
@@ -396,21 +398,22 @@ public class CmdLineUtil {
 
 			
 			validateStandardOptions();
-
-			
 			
 			
 			// TODO: Do this without hardcoding the protocol suite names here.
 			String[] remainingArgs = cmd.getArgs();
 			switch (this.sceConf.getProtocolSuiteName()) {
 			case "bgw":
-				this.psConf = BgwConfiguration.fromCmdArgs(this.sceConf, remainingArgs);
+//				this.psConf = BgwConfiguration.fromCmdArgs(this.sceConf, remainingArgs);
+				this.psConf = new BgwConfigurationFromProperties();
 				break;
 			case "dummy":
 				this.psConf = DummyConfiguration.fromCmdArgs(this.sceConf, remainingArgs);
 				break;
 			case "spdz":
-				this.psConf = SpdzConfiguration.fromCmdArgs(this.sceConf, remainingArgs);
+				// this.psConf = SpdzConfiguration.fromCmdArgs(this.sceConf, remainingArgs);
+				SpdzConfiguration config = new SpdzConfigurationFromProperties();
+				this.psConf = config;
 				break;
 			default:
 				throw new MPCException("Unknown protocol suite: " + this.getSCEConfiguration().getProtocolSuiteName());

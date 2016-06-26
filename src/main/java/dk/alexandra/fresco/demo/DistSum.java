@@ -62,11 +62,13 @@ import dk.alexandra.fresco.suite.bgw.configuration.BgwConfiguration;
 
 /**
  * This demonstrates how to aggregate generic protocols to form an application.
+ * 
+ * @author Stefan Smarzly
  */
 public class DistSum implements Application {
 	
 	/**
-	 * Applications can be uploaded to fresco dynamically and are therefore
+	 * Applications can be uploaded to FRESCO dynamically and are therefore
 	 * Serializable's. This means that each application must have a unique
 	 * serialVersionUID.
 	 * 
@@ -137,6 +139,7 @@ public class DistSum implements Application {
 		SCE sce = SCEFactory.getSCEFromConfiguration(sceConf, protocolSuiteConf);
 		
 		try {
+			// Start secure computation
 			sce.runApplication(app);
 			
 		} catch (MPCException e) {
@@ -198,7 +201,7 @@ public class DistSum implements Application {
 		// Create wires for retrieving the others' shared secret part and ours one
 		SInt[] inputSharings = new SInt[numPeers];
 		
-		// Closing protocol: what happens beind the scene
+		// Closing protocol: what happens behind the scene
 //		for (int i = 0; i < inputSharings.length; i++) {
 //			inputSharings[i] = fac.getSInt();
 //		}
@@ -217,14 +220,14 @@ public class DistSum implements Application {
 			inputSharings[p - 1] = ioBuilder.input(myValue, p);
 		}
 		ioBuilder.endCurScope();
-		ProtocolProducer shareInputPar = (SequentialProtocolProducer)ioBuilder.getProtocol();
+		ProtocolProducer closeInputProtocol = (SequentialProtocolProducer)ioBuilder.getProtocol();
 		ioBuilder.reset();
 
 		// 2. Protocol: summing up all received shared secrets and one part of our own one
 		// This works locally due to the linear properties of the shared secrets
-		SInt sum1 = fac.getSInt();
 		
 		// Behind the scene: create sequence of protocols which will compute the sum
+//		SInt ssum = fac.getSInt();
 //		SequentialProtocolProducer sumProtocol = new SequentialProtocolProducer();
 //		sumProtocol.append(fac.getAddProtocol(inputSharings[0], inputSharings[1], sum1));
 //		
@@ -237,16 +240,15 @@ public class DistSum implements Application {
 //			}
 //		}
 		
-		ProtocolProducer sumProtocol;
-		sum1 = npb.sum(inputSharings);
-		sumProtocol = npb.getProtocol();
+		SInt ssum = npb.sum(inputSharings);
+		ProtocolProducer sumProtocol = npb.getProtocol();
 		
 
-		this.result = new OInt[] { ioBuilder.output(sum1) };
-		ProtocolProducer io = ioBuilder.getProtocol();
+		this.result = new OInt[] { ioBuilder.output(ssum) };
+		ProtocolProducer openProtocol = ioBuilder.getProtocol();
 
 		ProtocolProducer gp = new SequentialProtocolProducer(
-				shareInputPar, sumProtocol, io);
+				closeInputProtocol, sumProtocol, openProtocol);
 		return gp;
 	}
 	

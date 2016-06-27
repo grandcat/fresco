@@ -10,7 +10,7 @@ import ch.qos.logback.core.FileAppender;
 
 public class CsvFileAppender<E> extends FileAppender<E> {
 	
-	String csvHeader = "";
+	String csvHeader = null;
 	
 	public void setHeader(String header) {
 		this.csvHeader = header;
@@ -21,7 +21,7 @@ public class CsvFileAppender<E> extends FileAppender<E> {
 	{
 	    super.openFile(fileName);
 	    
-	    if (csvHeader != "") {
+	    if (csvHeader != null) {
 	    	File file = new File(getFile());
 	    	
 	    	if (file.exists() && file.isFile() && file.length() == 0)

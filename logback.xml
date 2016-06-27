@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <configuration>
-  <!--<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
-    <!-- Supports multiple JVM writing to the same log file in a safe way -->
+  <!--<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <!--<prudent>true</prudent>
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
       <fileNamePattern>proto_timings.%d{yyyy-MM}.csv</fileNamePattern>
@@ -14,7 +13,6 @@
     </encoder>
   </appender>-->
 
-  <!--<appender name="FILE" class="ch.qos.logback.core.FileAppender">-->
   <appender name="FILE" class="dk.alexandra.fresco.demo.CsvFileAppender">
     <!-- Supports multiple JVM writing to the same log file in a safe way -->
     <prudent>true</prudent>
@@ -22,6 +20,7 @@
     <file>proto_timings.csv</file>
     <!-- CSV header -->
     <header>num,time,nodeid,result</header>
+
     <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
       <pattern>%msg%n</pattern>
     </encoder>

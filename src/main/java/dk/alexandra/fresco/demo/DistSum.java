@@ -156,8 +156,12 @@ public class DistSum implements Application {
 		System.out.println(">>>>> Computation done.");
 		// Log statistics to common csv file
 		l.debug(numParties + "," + runTime + "," + sceConf.getMyId() + "," + rcvdOutput[0].getValue());
+		System.out.println(">>>>> Log writing done.");
 		
-		sce.shutdownSCE();		
+		sce.shutdownSCE();
+		// XXX: SCE somewhere does not shutdown properly. So kill java process right now..
+		System.out.println(">>>>> After shutdownSCE.");
+		System.exit(0);
 	}
 	
 	/**

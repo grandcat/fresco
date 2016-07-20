@@ -1,3 +1,4 @@
+#!#!/usr/bin/env python
 
 import time
 from subprocess import call
@@ -13,7 +14,7 @@ NUM_PARTIES = 7
 
 LINK_CONFIG = {
     # Options: bw=10, delay='5ms', loss=10, max_queue_size=1000, use_htb=True
-    'delay': '0.0ms',
+    'delay': '1.0ms',
     'loss': 0,
     'use_htb': True
     }
@@ -60,7 +61,7 @@ def run():
         # Best evaluator so far: -eSEQUENTIAL_BATCHED (ok: -ePARALLEL_BATCHED)
         # Needs -hold for xterm
         # xterm -hold -geometry 130x40+0+900 -e
-        host.cmd('xterm -hold -geometry 130x40+0+900 -e java -cp target/fresco-0.2-SNAPSHOT-jar-with-dependencies.jar dk.alexandra.fresco.demo.DistSum -sbgw -eSEQUENTIAL %s &' % (generate_node_config(i + 1, hosts)))
+        host.cmd('xterm -hold -geometry 130x40+0+900 -e java -cp target/fresco-0.2-SNAPSHOT-jar-with-dependencies.jar dk.alexandra.fresco.demo.DistSum -sbgw -ePARALLEL %s &' % (generate_node_config(i + 1, hosts)))
         #print(host.readline())
 
     raw_input('Press enter to stop all nodes.')

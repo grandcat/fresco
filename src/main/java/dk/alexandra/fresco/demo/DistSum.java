@@ -93,7 +93,7 @@ public class DistSum implements Application {
 		this.myValue = BigInteger.valueOf(config.getMyId() * 2);
 	}
 	
-	
+
 	/**
 	 * The main method sets up application specific command line parameters,
 	 * parses command line arguments. Based on the command line arguments it
@@ -119,8 +119,9 @@ public class DistSum implements Application {
 			System.exit(-1);
 		}
 
-		// Do the secure computation
+		// Prepare the SMC protocols
 		DistSum app = new DistSum(sceConf.getMyId(), sceConf);
+		DistSum app2 = new DistSum(sceConf.getMyId(), sceConf);
 		final int numParties = sceConf.getParties().size();
 		
 		// Overwrite suite configuration for practical threshold
@@ -138,19 +139,25 @@ public class DistSum implements Application {
 		
 		SCE sce = SCEFactory.getSCEFromConfiguration(sceConf, protocolSuiteConf);
 		
+		long runTime = -1;
 		try {
-			// Start secure computation
+			// Warm-up: start first secure computation
 			sce.runApplication(app);
-			
+			runTime = System.currentTimeMillis() - protocolStartTime;
+			System.out.println(">>>>> [" + sceConf.getMyId() + "] Warmup: Computation time: " + runTime);
+
+			// Benchmark: start second secure computation
+			protocolStartTime = System.currentTimeMillis();	//< connections already established
+			sce.runApplication(app2);
+			runTime = System.currentTimeMillis() - protocolStartTime;
+			System.out.println(">>>>> [" + sceConf.getMyId() + "] Final: Computation time: " + runTime);
+
 		} catch (MPCException e) {
 			System.out.println("Error while doing MPC: " + e.getMessage());
 			System.exit(-1);
 		}
-		long runTime = System.currentTimeMillis() - protocolStartTime;
-		System.out.println(">>>>> [" + sceConf.getMyId() + "] Computation time: " + runTime);
-		
-		
-		OInt[] rcvdOutput = app.result;
+
+		OInt[] rcvdOutput = app2.result;
 		
 		System.out.println(">>>>> [" + sceConf.getMyId() + "] Got output " + rcvdOutput[0].getValue());
 		System.out.println(">>>>> Computation done.");

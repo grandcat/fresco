@@ -145,7 +145,7 @@ public class ScapiNetworkImpl implements Network {
 		} catch (TimeoutException e) {
 			throw new IOException(e);
 		}
-		// Hack for evaluation: start timer as all connections should be established by now
+		// XXX Hack for evaluation: start timer as all connections should be established by now
 		DistSum.startMeasurement();
 		
 		// Enable secure (auth + encrypted) channels if a key is specified.

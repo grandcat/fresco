@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import argparse
 import time
 from subprocess import call
 
@@ -10,7 +11,7 @@ from mininet.net import Mininet
 from mininet.log import setLogLevel
 
 # Simulation parameters and configuration
-NUM_PARTIES = 7
+DEF_NUM_PARTIES = 5
 
 LINK_CONFIG = {
     # Options: bw=10, delay='5ms', loss=10, max_queue_size=1000, use_htb=True
@@ -40,8 +41,8 @@ def generate_node_config(node_id, hosts):
     return config_str
 
 
-def run():
-    flat_topo = SingleSwitchTopo(n=NUM_PARTIES)
+def run(num_nodes):
+    flat_topo = SingleSwitchTopo(n=num_nodes)
     net = Mininet(topo=flat_topo, link=TCLink)
 
     net.start()
@@ -72,6 +73,11 @@ def run():
     net.stop()
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Runs multiple virtual nodes using Mininet')
+    parser.add_argument('-N', nargs='?', help='Number of nodes',
+                        type=int, default=DEF_NUM_PARTIES, choices=range(3, 30, 2))
+    args = parser.parse_args()
+
     # Tell mininet to print useful information
     setLogLevel('info')
-    run()
+    run(args.N)

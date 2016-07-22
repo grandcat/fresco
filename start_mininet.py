@@ -62,7 +62,7 @@ def run(num_nodes):
         # Best evaluator so far: -eSEQUENTIAL_BATCHED (ok: -ePARALLEL_BATCHED)
         # Needs -hold for xterm
         # xterm -hold -geometry 130x40+0+900 -e
-        host.cmd('xterm -hold -geometry 130x40+0+900 -e java -cp target/fresco-0.2-SNAPSHOT-jar-with-dependencies.jar dk.alexandra.fresco.demo.DistSum -sbgw -eSEQUENTIAL %s -tid "virt_eP_l1ms" &' % (generate_node_config(i + 1, hosts)))
+        host.cmd('xterm -hold -geometry 130x40+0+900 -e java -cp target/fresco-0.2-SNAPSHOT-jar-with-dependencies.jar dk.alexandra.fresco.demo.DistSum -sbgw -ePARALLEL %s -tid "virt_eP_l1ms" &' % (generate_node_config(i + 1, hosts)))
         #print(host.readline())
 
     raw_input('Press enter to stop all nodes.')

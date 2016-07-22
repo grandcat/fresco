@@ -160,16 +160,16 @@ public class DistSum implements Application {
 
 		} catch (MPCException e) {
 			System.out.println("Error while doing MPC: " + e.getMessage());
+			l.debug(numParties + "," + runTime + "," + sceConf.getMyId() + ",[FAILED]," + testid);
 			System.exit(-1);
 		}
 
 		OInt[] rcvdOutput = app2.result;
 		
 		System.out.println(">>>>> [" + sceConf.getMyId() + "] Got output " + rcvdOutput[0].getValue());
-		System.out.println(">>>>> Computation done.");
 		// Write statistics vector to common csv file
 		l.debug(numParties + "," + runTime + "," + sceConf.getMyId() + "," + rcvdOutput[0].getValue() + "," + testid);
-		System.out.println(">>>>> Log writing done.");
+		System.out.println(">>>>> Writing log done.");
 		
 		sce.shutdownSCE();
 		// XXX: SCE somewhere does not shutdown properly. So kill java process right now..

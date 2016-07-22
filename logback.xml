@@ -19,7 +19,7 @@
     <append>false</append>
     <file>proto_timings.csv</file>
     <!-- CSV header -->
-    <header>num,time,nodeid,result</header>
+    <header>num,time,nodeid,result,testid</header>
 
     <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
       <pattern>%msg%n</pattern>

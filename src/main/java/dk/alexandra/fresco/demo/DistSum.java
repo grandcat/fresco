@@ -32,13 +32,11 @@ import java.util.logging.Level;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dk.alexandra.fresco.framework.Application;
 import dk.alexandra.fresco.framework.MPCException;
-import dk.alexandra.fresco.framework.Protocol;
 import dk.alexandra.fresco.framework.ProtocolFactory;
 import dk.alexandra.fresco.framework.ProtocolProducer;
 import dk.alexandra.fresco.framework.Reporter;
@@ -47,13 +45,9 @@ import dk.alexandra.fresco.framework.sce.SCE;
 import dk.alexandra.fresco.framework.sce.SCEFactory;
 import dk.alexandra.fresco.framework.sce.configuration.ProtocolSuiteConfiguration;
 import dk.alexandra.fresco.framework.sce.configuration.SCEConfiguration;
-import dk.alexandra.fresco.framework.util.ByteArithmetic;
-import dk.alexandra.fresco.framework.value.OBool;
 import dk.alexandra.fresco.framework.value.OInt;
-import dk.alexandra.fresco.framework.value.SBool;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.field.integer.BasicNumericFactory;
-import dk.alexandra.fresco.lib.helper.ParallelProtocolProducer;
 import dk.alexandra.fresco.lib.helper.builder.NumericIOBuilder;
 import dk.alexandra.fresco.lib.helper.builder.NumericProtocolBuilder;
 import dk.alexandra.fresco.lib.helper.sequential.SequentialProtocolProducer;
@@ -105,12 +99,24 @@ public class DistSum implements Application {
 		Reporter.init(Level.FINE);
 		
 		CmdLineUtil util = new CmdLineUtil();
+		// Additional params for test evaluation
+		util.addOption(Option.builder("tid")
+				.desc("The ID of the running testset. It is included in the generated CSV file for reference")
+				.longOpt("testid")
+				.required(false)
+				.hasArg(true)
+				.build()
+				);
+
 		SCEConfiguration sceConf = null;
-		
+		String testid = "";
+
 		try {
 			// Node configuration (our ID, other MPC nodes) from command line
 			CommandLine cmd = util.parse(args);
 			sceConf = util.getSCEConfiguration();
+			// Optional test parameter
+			testid = cmd.getOptionValue("tid", "");
 						
 		} catch (IllegalArgumentException e) {
 			System.out.println("Error: " + e);
@@ -161,8 +167,8 @@ public class DistSum implements Application {
 		
 		System.out.println(">>>>> [" + sceConf.getMyId() + "] Got output " + rcvdOutput[0].getValue());
 		System.out.println(">>>>> Computation done.");
-		// Log statistics to common csv file
-		l.debug(numParties + "," + runTime + "," + sceConf.getMyId() + "," + rcvdOutput[0].getValue());
+		// Write statistics vector to common csv file
+		l.debug(numParties + "," + runTime + "," + sceConf.getMyId() + "," + rcvdOutput[0].getValue() + "," + testid);
 		System.out.println(">>>>> Log writing done.");
 		
 		sce.shutdownSCE();

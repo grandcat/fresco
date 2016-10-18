@@ -75,7 +75,7 @@ def run(num_nodes):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Runs multiple virtual nodes using Mininet')
     parser.add_argument('-N', nargs='?', help='Number of nodes',
-                        type=int, default=DEF_NUM_PARTIES, choices=range(3, 30, 2))
+                        type=int, default=DEF_NUM_PARTIES, choices=range(2, 30, 1))
     args = parser.parse_args()
 
     # Tell mininet to print useful information

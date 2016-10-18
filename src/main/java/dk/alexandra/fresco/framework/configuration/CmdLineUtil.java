@@ -56,6 +56,8 @@ import dk.alexandra.fresco.suite.ProtocolSuite;
 import dk.alexandra.fresco.suite.bgw.configuration.BgwConfigurationFromProperties;
 import dk.alexandra.fresco.suite.dummy.DummyConfiguration;
 import dk.alexandra.fresco.suite.spdz.configuration.SpdzConfiguration;
+import dk.alexandra.fresco.suite.tinytables.online.TinyTablesConfiguration;
+import dk.alexandra.fresco.suite.tinytables.prepro.TinyTablesPreproConfiguration;
 import dk.alexandra.fresco.suite.spdz.configuration.SpdzConfigurationFromProperties;
 /**
  * Utility for reading all configuration from command line.

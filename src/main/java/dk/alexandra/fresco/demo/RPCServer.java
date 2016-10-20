@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import dk.alexandra.fresco.demo.CmdResult.Status;
 import dk.alexandra.fresco.demo.PreparePhase.Participant;
+import dk.alexandra.fresco.demo.SMCGrpc.SMCImplBase;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
@@ -22,7 +23,7 @@ public class RPCServer {
 	}
 
 	public void start() throws IOException {
-		this.server = ServerBuilder.forPort(port).addService(new GreeterImpl()).build().start();
+		this.server = ServerBuilder.forPort(port).addService(new SMCImpl()).build().start();
 		logger.info("RPC server started, listening on " + port);
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -59,11 +60,13 @@ public class RPCServer {
 		server.blockUntilShutdown();
 	}
 
-	private class GreeterImpl extends GreeterGrpc.GreeterImplBase {
+	private class SMCImpl extends SMCImplBase {
 
 		@Override
-		public void sayHello(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
-			HelloReply reply = HelloReply.newBuilder().setMessage("Hello " + req.getName()).build();
+		public void init(SessionCtx req, StreamObserver<CmdResult> responseObserver) {
+			// Reply
+			CmdResult reply = CmdResult.newBuilder().setMsg("Init done. Nice session ID " + req.getSessionID())
+					.setStatus(Status.SUCCESS).build();
 			responseObserver.onNext(reply);
 			responseObserver.onCompleted();
 		}

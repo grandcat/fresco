@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
+import dk.alexandra.fresco.demo.CmdResult.Status;
 import dk.alexandra.fresco.demo.PreparePhase.Participant;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -68,7 +69,7 @@ public class RPCServer {
 		}
 
 		@Override
-		public void doPrepare(PreparePhase req, StreamObserver<HelloReply> responseObserver) {
+		public void doPrepare(PreparePhase req, StreamObserver<CmdResult> responseObserver) {
 			StringBuilder sb = new StringBuilder();
 			for (Iterator i = req.getParticipantsList().iterator(); i.hasNext();) {
 				Participant p = (Participant) i.next();
@@ -79,7 +80,7 @@ public class RPCServer {
 			logger.info("doPrepare called: " + sb.toString());
 
 			// Reply
-			HelloReply reply = HelloReply.newBuilder().setMessage("doPrepare done successfully.").build();
+			CmdResult reply = CmdResult.newBuilder().setMsg("doPrepare done.").setStatus(Status.SUCCESS).build();
 			responseObserver.onNext(reply);
 			responseObserver.onCompleted();
 		}

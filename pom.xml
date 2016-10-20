@@ -1,3 +1,4 @@
+
 <?xml version="1.0"?>
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -113,12 +114,39 @@
       <artifactId>logback-core</artifactId>
       <version>1.0.1</version>
     </dependency>
+
+	<!-- gRPC server + protobuf -->
+	<dependency>
+		<groupId>io.grpc</groupId>
+		<artifactId>grpc-netty</artifactId>
+		<version>1.0.1</version>
+	</dependency>
+	<dependency>
+		<groupId>io.grpc</groupId>
+		<artifactId>grpc-protobuf</artifactId>
+		<version>1.0.1</version>
+	</dependency>
+	<dependency>
+		<groupId>io.grpc</groupId>
+		<artifactId>grpc-stub</artifactId>
+		<version>1.0.1</version>
+	</dependency>
+    
   </dependencies>
 
 
   <!-- ================ FRESCO BUILD ========================== -->
 
   <build>
+	<!-- gRPC -->
+	<extensions>
+		<extension>
+			<groupId>kr.motd.maven</groupId>
+			<artifactId>os-maven-plugin</artifactId>
+			<version>1.4.1.Final</version>
+		</extension>
+	</extensions>
+  
   	<plugins>
     	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
@@ -181,24 +209,38 @@
              </configuration>
           </plugin>
 
-          <!-- Classpath for VS Code's Java Intellisense -->
-          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-dependency-plugin</artifactId>
-              <version>2.9</version>
-              <executions>
-                  <execution>
-                      <id>build-classpath</id>
-                      <phase>generate-sources</phase>
-                      <goals>
-                          <goal>build-classpath</goal>
-                      </goals>
-                  </execution>
-              </executions>
-              <configuration>
-                  <outputFile>classpath.txt</outputFile>
-              </configuration>
-          </plugin>
+	<!-- gRPC ProtoBuf plugin -->
+	<plugin>
+	<groupId>org.xolstice.maven.plugins</groupId>
+	<artifactId>protobuf-maven-plugin</artifactId>
+	<version>0.5.0</version>
+	<configuration>
+		<!-- The version of protoc must match protobuf-java. If you don't depend 
+			on protobuf-java directly, you will be transitively depending on the protobuf-java 
+			version that grpc depends on. -->
+		<protocArtifact>com.google.protobuf:protoc:3.0.2:exe:${os.detected.classifier}</protocArtifact>
+		<pluginId>grpc-java</pluginId>
+		<pluginArtifact>io.grpc:protoc-gen-grpc-java:1.0.1:exe:${os.detected.classifier}</pluginArtifact>
+		
+<!-- 
+		<protoSourceRoot>/home/stefan/goprojects/src/github.com/grandcat/flexsmc/proto</protoSourceRoot>
+
+		<additionalProtoPathElements>
+			<additionalProtoPathElement>
+				/home/stefan/goprojects/src
+			</additionalProtoPathElement>
+		</additionalProtoPathElements>
+-->
+	</configuration>
+	<executions>
+		<execution>
+			<goals>
+				<goal>compile</goal>		<!-- for protobuf message definitions -->
+				<goal>compile-custom</goal>	<!-- for RPC server interface -->
+			</goals>
+		</execution>
+	</executions>
+</plugin>
 
 	</plugins>
   </build>

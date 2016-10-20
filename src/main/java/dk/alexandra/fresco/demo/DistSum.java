@@ -27,6 +27,7 @@
 //package dk.alexandra.fresco.demo;
 package dk.alexandra.fresco.demo;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.logging.Level;
 
@@ -52,7 +53,6 @@ import dk.alexandra.fresco.lib.helper.builder.NumericIOBuilder;
 import dk.alexandra.fresco.lib.helper.builder.NumericProtocolBuilder;
 import dk.alexandra.fresco.lib.helper.sequential.SequentialProtocolProducer;
 import dk.alexandra.fresco.suite.bgw.configuration.BgwConfiguration;
-
 
 /**
  * This demonstrates how to aggregate generic protocols to form an application.
@@ -98,6 +98,15 @@ public class DistSum implements Application {
 	public static void main(String[] args) {
 		Reporter.init(Level.FINE);
 		
+		// Spawn RPC server for SMC control
+		RPCServer rpc = new RPCServer();
+		try {
+			rpc.start();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
 		CmdLineUtil util = new CmdLineUtil();
 		// Additional params for test evaluation
 		util.addOption(Option.builder("tid")
@@ -174,6 +183,14 @@ public class DistSum implements Application {
 		sce.shutdownSCE();
 		// XXX: SCE somewhere does not shutdown properly. So kill java process right now..
 		System.out.println(">>>>> After shutdownSCE.");
+
+		// Block for RPC server
+		try {
+			rpc.blockUntilShutdown();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		System.exit(0);
 	}
 	

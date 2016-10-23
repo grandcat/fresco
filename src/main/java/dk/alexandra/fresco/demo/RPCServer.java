@@ -1,6 +1,7 @@
 package dk.alexandra.fresco.demo;
 
 import java.io.IOException;
+import java.net.SocketAddress;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
@@ -8,8 +9,11 @@ import dk.alexandra.fresco.demo.CmdResult.Status;
 import dk.alexandra.fresco.demo.PreparePhase.Participant;
 import dk.alexandra.fresco.demo.SMCGrpc.SMCImplBase;
 import io.grpc.Server;
-import io.grpc.ServerBuilder;
+import io.grpc.benchmarks.Utils;
+import io.grpc.netty.NettyServerBuilder;
 import io.grpc.stub.StreamObserver;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.ServerChannel;
 
 public class RPCServer {
 	private static final Logger logger = Logger.getLogger(RPCServer.class.getName());
@@ -23,7 +27,28 @@ public class RPCServer {
 	}
 
 	public void start() throws IOException {
-		this.server = ServerBuilder.forPort(port).addService(new SMCImpl()).build().start();
+		// this.server = ServerBuilder.forPort(port).addService(new
+		// SMCImpl()).build().start();
+		
+		// Unix socket properties (Linux only)
+		final EventLoopGroup boss;
+		final EventLoopGroup worker;
+		final Class<? extends ServerChannel> channelType;
+		try {
+	        Class<?> groupClass = Class.forName("io.netty.channel.epoll.EpollEventLoopGroup");
+	        @SuppressWarnings("unchecked")
+	        Class<? extends ServerChannel> channelClass = (Class<? extends ServerChannel>)
+	            Class.forName("io.netty.channel.epoll.EpollServerDomainSocketChannel");
+			boss = (EventLoopGroup) groupClass.getConstructor().newInstance();
+			worker = (EventLoopGroup) groupClass.getConstructor().newInstance();
+			channelType = channelClass;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
+		SocketAddress address = Utils.parseSocketAddress("unix:///tmp/grpc.sock");
+		this.server = NettyServerBuilder.forAddress(address).bossEventLoopGroup(boss)
+				.workerEventLoopGroup(worker).channelType(channelType).addService(new SMCImpl()).build().start();
 		logger.info("RPC server started, listening on " + port);
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override

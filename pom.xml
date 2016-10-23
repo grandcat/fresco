@@ -131,6 +131,12 @@
 		<artifactId>grpc-stub</artifactId>
 		<version>1.0.1</version>
 	</dependency>
+	<!-- Utils for UNIX socket -->
+	<dependency>
+		<groupId>io.grpc</groupId>
+		<artifactId>grpc-benchmarks</artifactId>
+		<version>1.0.1</version>
+	</dependency>
     
   </dependencies>
 
